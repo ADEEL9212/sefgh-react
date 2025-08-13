@@ -1,27 +1,28 @@
+import { useState } from 'react';
+import { Header, Sidebar, MainContent } from './components/layout';
 import './App.css';
 
 function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src="Octocat.png" className="App-logo" alt="logo" />
-        <p>
-          GitHub Codespaces <span className="heart">♥️</span> React
-        </p>
-        <p className="small">
-          Edit <code>src/App.jsx</code> and save to reload.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </p>
-      </header>
+    <div className="h-screen flex flex-col bg-gray-50">
+      <Header onToggleSidebar={toggleSidebar} />
+      
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          onToggle={toggleSidebar}
+        />
+        
+        <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+          <MainContent />
+        </div>
+      </div>
     </div>
   );
 }
