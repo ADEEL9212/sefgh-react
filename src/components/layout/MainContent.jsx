@@ -1,6 +1,25 @@
 import { Card } from '../ui';
+import { useApp } from '../../contexts/AppContext';
+import { SearchResults } from '../search/SearchResults';
 
 export function MainContent() {
+  const { state } = useApp();
+
+  // Show search results if we have them
+  if (state.searchResults.length > 0 || state.isLoading || state.currentQuery) {
+    return (
+      <main className="flex-1 p-6 bg-gray-50 overflow-auto">
+        <div className="max-w-4xl mx-auto">
+          <SearchResults 
+            results={state.searchResults}
+            query={state.currentQuery}
+            isLoading={state.isLoading}
+          />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex-1 p-6 bg-gray-50 overflow-auto">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -66,19 +85,19 @@ export function MainContent() {
             <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-sm text-blue-800">
-                Configure your GitHub token in Settings to unlock full functionality
+                Open the sidebar and go to Search to find repositories
               </span>
             </div>
             <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-sm text-green-800">
-                Add your OpenAI API key to enable AI chat features
+                Configure your GitHub token in Settings for enhanced search capabilities
               </span>
             </div>
             <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
               <span className="text-sm text-yellow-800">
-                Start by searching for repositories or asking the AI assistant a question
+                Add your OpenAI API key to enable AI chat features
               </span>
             </div>
           </div>

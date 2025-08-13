@@ -8,6 +8,9 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../ui';
+import { useApp } from '../../contexts/AppContext';
+import { SearchForm } from '../search/SearchForm';
+import { SearchResults } from '../search/SearchResults';
 
 export function Sidebar({ isOpen, onToggle }) {
   const [activeTab, setActiveTab] = useState('chat');
@@ -116,18 +119,74 @@ function ChatPanel() {
 }
 
 function SearchPanel() {
+  const { state, getTrendingRepositories, getRepositoriesByLanguage } = useApp();
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'trending':
+        getTrendingRepositories();
+        break;
+      case 'javascript':
+        getRepositoriesByLanguage('javascript');
+        break;
+      case 'python':
+        getRepositoriesByLanguage('python');
+        break;
+      case 'typescript':
+        getRepositoriesByLanguage('typescript');
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
-    <div className="p-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Repository Search</h2>
-      <div className="space-y-4">
-        <input
-          type="text"
-          placeholder="Search repositories..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Repository Search</h2>
+        <SearchForm />
+      </div>
+      
+      <div className="flex-1 overflow-auto p-4">
+        {!state.searchResults.length && !state.isLoading && !state.currentQuery && (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleQuickAction('trending')}
+                  className="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  🔥 Trending repositories
+                </button>
+                <button
+                  onClick={() => handleQuickAction('javascript')}
+                  className="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  📝 JavaScript projects
+                </button>
+                <button
+                  onClick={() => handleQuickAction('python')}
+                  className="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  🐍 Python projects
+                </button>
+                <button
+                  onClick={() => handleQuickAction('typescript')}
+                  className="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  🔷 TypeScript projects
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <SearchResults 
+          results={state.searchResults}
+          query={state.currentQuery}
+          isLoading={state.isLoading}
         />
-        <div className="text-sm text-gray-500">
-          Try searching for popular repositories, or use filters like "language:javascript" or "stars:&gt;1000"
-        </div>
       </div>
     </div>
   );
@@ -145,6 +204,18 @@ function BookmarksPanel() {
 }
 
 function SettingsPanel() {
+  const { state, setGitHubToken, setOpenAIApiKey } = useApp();
+  const [githubTokenInput, setGitHubTokenInput] = useState(state.githubToken);
+  const [openaiKeyInput, setOpenAIKeyInput] = useState(state.openaiApiKey);
+
+  const handleSaveGitHubToken = () => {
+    setGitHubToken(githubTokenInput);
+  };
+
+  const handleSaveOpenAIKey = () => {
+    setOpenAIApiKey(openaiKeyInput);
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Settings</h2>
@@ -153,13 +224,20 @@ function SettingsPanel() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             GitHub Token
           </label>
-          <input
-            type="password"
-            placeholder="Enter your GitHub personal access token"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="space-y-2">
+            <input
+              type="password"
+              value={githubTokenInput}
+              onChange={(e) => setGitHubTokenInput(e.target.value)}
+              placeholder="Enter your GitHub personal access token"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <Button size="sm" onClick={handleSaveGitHubToken}>
+              Save Token
+            </Button>
+          </div>
           <p className="text-xs text-gray-500 mt-1">
-            Required for enhanced GitHub API access
+            Required for enhanced GitHub API access. {state.githubToken ? '✅ Configured' : '❌ Not configured'}
           </p>
         </div>
         
@@ -167,13 +245,20 @@ function SettingsPanel() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             OpenAI API Key
           </label>
-          <input
-            type="password"
-            placeholder="Enter your OpenAI API key"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="space-y-2">
+            <input
+              type="password"
+              value={openaiKeyInput}
+              onChange={(e) => setOpenAIKeyInput(e.target.value)}
+              placeholder="Enter your OpenAI API key"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <Button size="sm" onClick={handleSaveOpenAIKey}>
+              Save Key
+            </Button>
+          </div>
           <p className="text-xs text-gray-500 mt-1">
-            Required for AI chat functionality
+            Required for AI chat functionality. {state.openaiApiKey ? '✅ Configured' : '❌ Not configured'}
           </p>
         </div>
       </div>
